@@ -1,6 +1,7 @@
 ## Interface: 61200
 ## Author: Oobie
 ## Title: Stockpile
+## SavedVariables: StockpileInventoryData
 ## Notes: Sync inventory data across multiple characters
 
 Stockpile.lua

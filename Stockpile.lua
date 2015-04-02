@@ -1,25 +1,3 @@
--- ------------------------
--- CONFIG
--- ------------------------
-
--- Faction watch timeout
--- Time in seconds until faction watch is turned off after a faction update
--- 60 = 1 minute, 900 = 15 min, etc.
-local OobieUtil_FactionWatchTimeout = 600
-
--- Auto repair
--- 1 for on, nil for off
-local OobieUtil_AutoRepair = 1
-
--- Auto repair from guild bank, if available
--- 1 for on, nil for off
-local OobieUtil_GuildBankAutoRepair = nil
-
--- ------------------------
--- END CONFIG: DO NOT EDIT
--- BELOW HERE UNLESS YOU
--- KNOW WHAT YOU ARE DOING
--- ------------------------
 
 -- ------------------------
 -- GLOBAL VARIABLES
@@ -31,33 +9,72 @@ Stockpile = CreateFrame("Frame", "Stockpile", UIParent)
 -- EVENT ACTIONS
 -- ------------------------
 
-actions = {
+Stockpile.actions = {
 
-	["CHAT_MSG_LOOT"] = function(arg1, arg2)
-		if string.find(arg1, "You receive loot") and string.find(arg1, "cffa335ee") then
-			PlaySoundFile("Interface\\AddOns\\OobieUtil\\Item.ogg")
-		end
-	end,
+  ["PLAYER_ENTERING_WORLD"] = function()
+    Stockpile_ScanBags(0, 4)
+  end,
 
-	["CHAT_MSG_WHISPER"] = function(arg1, arg2)
-		local zoneName = GetRealZoneText()
-		if (arg1=="doobie") then
-			InviteUnit(arg2)
-		end
-	end,
+  -- ["BAG_UPDATE"] = function(containerId)
+  --  p('--------------------------')
+  --  p('Bag #' .. containerId .. ' has ' .. GetContainerNumSlots(containerId) .. ' slots')
+  --  p('--------------------------')
+  -- end,
 
-	["DUEL_REQUESTED"] = function(arg1, arg2)
-		CancelDuel()
-	end,
+  ["ITEM_PUSH"] = function(bag, iconPath)
+    p('--------------------------')
+    p('ITEM_PUSH fired:')
+    p(bag)
+    p(iconPath)
+    p('--------------------------')
+  end,
 
-	["PLAYER_XP_UPDATE"] = function(arg1, arg2)
-		SetWatchedFactionIndex(0)
-	end,
+  ["BANKFRAME_OPENED"] = function()
+    Stockpile_ScanBags(5, 11)
+  end,
 
-	["TRAINER_SHOW"] = function(arg1, arg2)
-		SetTrainerServiceTypeFilter("unavailable", 0)
-	end,
+  ["BANKFRAME_CLOSED"] = function()
+    p('--------------------------')
+    p('BANKFRAME_CLOSED fired')
+    p('--------------------------')
+  end,
+
+  ["ADDON_LOADED"] = function(addonName)
+    Stockpile.character = UnitName('player')
+
+    if (addonName == 'Stockpile') then
+      if (StockpileInventoryData == nil) then
+        StockpileInventoryData = {
+          [Stockpile.character] = {
+            bank = {},
+            bags = {},
+            voidStorage = {}
+          }
+        }
+      elseif (StockpileInventoryData[Stockpile.character] == nil) then
+        StockpileInventoryData[Stockpile.character] = {
+          bank = {},
+          bags = {},
+          voidStorage = {}
+        }
+      end
+    end
+  end,
+
 }
+
+function Stockpile_ScanBags(start, stop)
+  for bag = start, stop do
+    for slot = 1, GetContainerNumSlots(bag) do
+      local item = GetContainerItemLink(bag, slot)
+      if (item ~= nil) then
+        local itemId = string.match(item, "(%d+)")
+        print(GetItemCount(item) .. 'x ' .. itemId)
+      end
+    end
+  end
+end
+
 
 -- -------------------------
 -- ONLOAD FUNCTION
@@ -65,21 +82,21 @@ actions = {
 
 function Stockpile_OnLoad()
 
-	for event, action in pairs(actions) do
-		Stockpile:RegisterEvent(event)
-	end
+  for event, action in pairs(Stockpile.actions) do
+    Stockpile:RegisterEvent(event)
+  end
 
-	Stockpile:SetScript("OnEvent", Stockpile.OnEvent)
+  Stockpile:SetScript("OnEvent", Stockpile.OnEvent)
 
 end
 
 -- -------------------------
 -- ONEVENT FUNCTION
 -- -------------------------
-	
+  
 function Stockpile:OnEvent(event, arg1, arg2)
 
-	actions[event](arg1,arg2)
+  Stockpile.actions[event](arg1, arg2)
 
 end
 
@@ -91,6 +108,6 @@ end
 -- p FUNCTION
 -- Print.  Handy for debugging.
 function p(msg)
-	DEFAULT_CHAT_FRAME:AddMessage(msg, 1, .4, .4)
+  DEFAULT_CHAT_FRAME:AddMessage(msg, 1, .4, .4)
 end
 
