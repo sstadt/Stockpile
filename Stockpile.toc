@@ -1,0 +1,7 @@
+## Interface: 61200
+## Author: Oobie
+## Title: Stockpile
+## Notes: Sync inventory data across multiple characters
+
+Stockpile.lua
+Stockpile.xml
