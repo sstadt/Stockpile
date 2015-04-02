@@ -11,70 +11,56 @@ Stockpile = CreateFrame("Frame", "Stockpile", UIParent)
 
 Stockpile.actions = {
 
-  ["PLAYER_ENTERING_WORLD"] = function()
-    Stockpile_ScanBags(0, 4)
-  end,
+  ["ADDON_LOADED"] = function(addonName)
 
-  -- ["BAG_UPDATE"] = function(containerId)
-  --  p('--------------------------')
-  --  p('Bag #' .. containerId .. ' has ' .. GetContainerNumSlots(containerId) .. ' slots')
-  --  p('--------------------------')
-  -- end,
+    if (addonName == 'Stockpile') then
+      Stockpile.character = UnitName('player')
+      Stockpile.realm = GetRealmName()
 
-  ["ITEM_PUSH"] = function(bag, iconPath)
-    p('--------------------------')
-    p('ITEM_PUSH fired:')
-    p(bag)
-    p(iconPath)
-    p('--------------------------')
-  end,
-
-  ["BANKFRAME_OPENED"] = function()
-    Stockpile_ScanBags(5, 11)
+      Stockpile_InitializeInventoryData()
+      Stockpile_ScanBags(0, NUM_BAG_SLOTS)
+    end
   end,
 
   ["BANKFRAME_CLOSED"] = function()
-    p('--------------------------')
-    p('BANKFRAME_CLOSED fired')
-    p('--------------------------')
-  end,
-
-  ["ADDON_LOADED"] = function(addonName)
-    Stockpile.character = UnitName('player')
-
-    if (addonName == 'Stockpile') then
-      if (StockpileInventoryData == nil) then
-        StockpileInventoryData = {
-          [Stockpile.character] = {
-            bank = {},
-            bags = {},
-            voidStorage = {}
-          }
-        }
-      elseif (StockpileInventoryData[Stockpile.character] == nil) then
-        StockpileInventoryData[Stockpile.character] = {
-          bank = {},
-          bags = {},
-          voidStorage = {}
-        }
-      end
-    end
+    Stockpile_ScanBags(-1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS)
   end,
 
 }
 
+-- -------------------------
+-- STOCKPILE FUNCTIONS
+-- -------------------------
+
+function Stockpile_InitializeInventoryData()
+  if (StockpileInventoryData == nil) then
+    StockpileInventoryData = {
+      [Stockpile.realm] = {
+        [Stockpile.character] = {}
+      }
+    }
+  elseif (StockpileInventoryData[Stockpile.realm] == nil) then
+    StockpileInventoryData[Stockpile.realm] = {
+      [Stockpile.character] = {}
+    }
+  elseif (StockpileInventoryData[Stockpile.realm][Stockpile.character] == nil) then
+    StockpileInventoryData[Stockpile.realm][Stockpile.character] = {}
+  end
+end
+
 function Stockpile_ScanBags(start, stop)
+  StockpileInventoryData[Stockpile.realm][Stockpile.character] = {}
+
   for bag = start, stop do
     for slot = 1, GetContainerNumSlots(bag) do
       local item = GetContainerItemLink(bag, slot)
       if (item ~= nil) then
-        local itemId = string.match(item, "(%d+)")
-        print(GetItemCount(item) .. 'x ' .. itemId)
+        local itemId = string.match(item, "item:(%d+)")
+        StockpileInventoryData[Stockpile.realm][Stockpile.character][itemId] = GetItemCount(item, true)
       end
     end
   end
 end
-
 
 -- -------------------------
 -- ONLOAD FUNCTION
@@ -100,14 +86,4 @@ function Stockpile:OnEvent(event, arg1, arg2)
 
 end
 
-
--- -------------------------
--- MISC FUNCTIONS
--- -------------------------
-
--- p FUNCTION
--- Print.  Handy for debugging.
-function p(msg)
-  DEFAULT_CHAT_FRAME:AddMessage(msg, 1, .4, .4)
-end
 
