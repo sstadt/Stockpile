@@ -92,11 +92,6 @@ function Stockpile:ScanBag(bag, isBankScan)
         itemCount = itemCount - StockpileInventoryData[Stockpile.realm][Stockpile.character]['bags'][itemId]
       end
 
-      local itemName = string.match(item, "%[(.*)%]")
-      if (itemName == 'Iron Horde Scraps') then
-        print(itemName .. '(' .. stockpileBucket .. '): ' .. itemCount)
-      end
-
       StockpileInventoryData[Stockpile.realm][Stockpile.character][stockpileBucket][itemId] = itemCount
     end
   end
