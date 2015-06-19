@@ -20,7 +20,6 @@ Stockpile.actions = {
       Stockpile.realm = GetRealmName()
 
       Stockpile:InitializeInventoryData()
-      Stockpile:ScanBags()
     end
   end,
 
