@@ -24,14 +24,13 @@ Stockpile.actions = {
     end
   end,
 
-  ["PLAYER_LOGOUT"] = function()
-    -- Stockpile:ScanBags()
-  end,
-
   ["BANKFRAME_CLOSED"] = function()
-    Stockpile:ScanBags()
     Stockpile:ScanBank()
   end,
+
+  ["BAG_UPDATE"] = function()
+    Stockpile:ScanBags()
+  end
 
 }
 
