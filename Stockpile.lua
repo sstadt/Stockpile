@@ -90,7 +90,11 @@ function Stockpile:ScanBag(bag, isBankScan)
         itemCount = itemCount - StockpileInventoryData[Stockpile.realm][Stockpile.character]['bags'][itemId]
       end
 
-      StockpileInventoryData[Stockpile.realm][Stockpile.character][stockpileBucket][itemId] = itemCount
+      -- it is necessary to check for nil here as some items do not have a normal item ID i.e. caged pets
+      -- TODO: find another way to get the item ID so these things can be tracked
+      if itemId ~= nil then
+        StockpileInventoryData[Stockpile.realm][Stockpile.character][stockpileBucket][itemId] = itemCount
+      end
     end
   end
 end
@@ -104,7 +108,8 @@ function Stockpile:GetStockpileBucket(isBank)
 end
 
 function Stockpile:GetItemIdFromLink(link)
-  return string.match(link, "item:(%d+)")
+  return string.match(link, "item[%-?%d:]+")
+  -- return string.match(link, "item:(%d+)")
 end
 
 function Stockpile:GetStockpiledItems(itemId)
