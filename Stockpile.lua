@@ -108,8 +108,7 @@ function Stockpile:GetStockpileBucket(isBank)
 end
 
 function Stockpile:GetItemIdFromLink(link)
-  return string.match(link, "item[%-?%d:]+")
-  -- return string.match(link, "item:(%d+)")
+  return string.match(link, "item:(%d+)")
 end
 
 function Stockpile:GetStockpiledItems(itemId)
